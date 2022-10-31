@@ -8,9 +8,8 @@
 import Foundation
 import CoreBluetooth
 
-let serviceUUID = "11000000-0000-0000-0000-818282828282";
+let serviceUUID =   "11000000-0000-0000-0000-000000000000";
 let characterUUID = "12000000-0000-0000-0000-000000000000";
-let writeCharacterUUID = "13000000-0000-0000-0000-000000000000";
 
 let instance = LSBluetoothPerpheral();
 
@@ -20,7 +19,6 @@ class LSBluetoothPerpheral: NSObject, CBPeripheralManagerDelegate {
     
     var manager: CBPeripheralManager?;
     var readWrite: CBMutableCharacteristic?;
-    var write: CBMutableCharacteristic?;
     
     var onReceiveWriteData: ((String) -> Void)? //接收信息回调
     
@@ -56,8 +54,8 @@ class LSBluetoothPerpheral: NSObject, CBPeripheralManagerDelegate {
     //符合条件后在初始化
     func setup() {
         print("初始化了")
-        let properties = (CBCharacteristicProperties.indicate.rawValue | CBCharacteristicProperties.write.rawValue | CBCharacteristicProperties.writeWithoutResponse.rawValue |  CBCharacteristicProperties.indicate.rawValue | CBCharacteristicProperties.read.rawValue | CBCharacteristicProperties.notify.rawValue)
-        let permissions = (CBAttributePermissions.readable.rawValue | CBAttributePermissions.writeable.rawValue)
+        let properties = (CBCharacteristicProperties.indicate.rawValue | CBCharacteristicProperties.write.rawValue | CBCharacteristicProperties.writeWithoutResponse.rawValue |  CBCharacteristicProperties.indicate.rawValue | CBCharacteristicProperties.read.rawValue | CBCharacteristicProperties.notify.rawValue | CBCharacteristicProperties.broadcast.rawValue | CBCharacteristicProperties.notifyEncryptionRequired.rawValue | CBCharacteristicProperties.indicateEncryptionRequired.rawValue)
+        let permissions = (CBAttributePermissions.readable.rawValue | CBAttributePermissions.writeable.rawValue | CBAttributePermissions.readEncryptionRequired.rawValue | CBAttributePermissions.writeEncryptionRequired.rawValue)
         
         //暴露特征
         let readwriteCharacteristicDescription = CBMutableDescriptor(type: CBUUID(string: CBUUIDCharacteristicUserDescriptionString), value: "name")
@@ -66,11 +64,9 @@ class LSBluetoothPerpheral: NSObject, CBPeripheralManagerDelegate {
         readWrite = CBMutableCharacteristic(type: CBUUID(string: characterUUID), properties: CBCharacteristicProperties(rawValue: properties), value: nil, permissions: CBAttributePermissions(rawValue: permissions));
         readWrite?.descriptors = [readwriteCharacteristicDescription];
     
-        //搞一个差不多一样的特征，可以用来做其他的交互
-        write = CBMutableCharacteristic(type: CBUUID(string: writeCharacterUUID), properties: CBCharacteristicProperties(rawValue: properties), value: nil, permissions: CBAttributePermissions(rawValue: permissions))
                                             
         let service = CBMutableService(type: CBUUID(string: serviceUUID), primary: true)
-        service.characteristics = [readWrite!, write!]
+        service.characteristics = [readWrite!]
         manager?.add(service)
     }
     
@@ -103,6 +99,7 @@ class LSBluetoothPerpheral: NSObject, CBPeripheralManagerDelegate {
     }
     
     func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveWrite requests: [CBATTRequest]) {
+        print("didReceiveWriterequests", requests);
         requests.forEach { obj in
             if obj.characteristic.properties.rawValue & CBCharacteristicProperties.write.rawValue == 1 {
                 //需要反馈就告诉成功了
@@ -112,7 +109,7 @@ class LSBluetoothPerpheral: NSObject, CBPeripheralManagerDelegate {
             if obj.value == nil {
                 return
             }
-            if (obj.characteristic.uuid.uuidString == writeCharacterUUID) {
+            if (obj.characteristic.uuid.uuidString == characterUUID) {
                 //假设我们用到了这个服务做其中一件事情
                 let receiveString = NSString(data: obj.value!, encoding: String.Encoding.utf8.rawValue);
                 let str = String(data: obj.value!, encoding: String.Encoding.utf8)
