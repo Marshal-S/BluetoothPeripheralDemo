@@ -54,17 +54,15 @@ class LSBluetoothPerpheral: NSObject, CBPeripheralManagerDelegate {
     //符合条件后在初始化
     func setup() {
         print("初始化了")
-        let properties = (CBCharacteristicProperties.indicate.rawValue | CBCharacteristicProperties.write.rawValue | CBCharacteristicProperties.writeWithoutResponse.rawValue |  CBCharacteristicProperties.indicate.rawValue | CBCharacteristicProperties.read.rawValue | CBCharacteristicProperties.notify.rawValue | CBCharacteristicProperties.broadcast.rawValue | CBCharacteristicProperties.notifyEncryptionRequired.rawValue | CBCharacteristicProperties.indicateEncryptionRequired.rawValue)
-        let permissions = (CBAttributePermissions.readable.rawValue | CBAttributePermissions.writeable.rawValue | CBAttributePermissions.readEncryptionRequired.rawValue | CBAttributePermissions.writeEncryptionRequired.rawValue)
+        let properties = (CBCharacteristicProperties.indicate.rawValue | CBCharacteristicProperties.write.rawValue | CBCharacteristicProperties.writeWithoutResponse.rawValue |  CBCharacteristicProperties.indicate.rawValue | CBCharacteristicProperties.read.rawValue | CBCharacteristicProperties.notify.rawValue | CBCharacteristicProperties.broadcast.rawValue)
+        let permissions = (CBAttributePermissions.readable.rawValue | CBAttributePermissions.writeable.rawValue)
         
         //暴露特征
         let readwriteCharacteristicDescription = CBMutableDescriptor(type: CBUUID(string: CBUUIDCharacteristicUserDescriptionString), value: "name")
         
-        
         readWrite = CBMutableCharacteristic(type: CBUUID(string: characterUUID), properties: CBCharacteristicProperties(rawValue: properties), value: nil, permissions: CBAttributePermissions(rawValue: permissions));
         readWrite?.descriptors = [readwriteCharacteristicDescription];
-    
-                                            
+                             
         let service = CBMutableService(type: CBUUID(string: serviceUUID), primary: true)
         service.characteristics = [readWrite!]
         manager?.add(service)
@@ -75,7 +73,7 @@ class LSBluetoothPerpheral: NSObject, CBPeripheralManagerDelegate {
         //添加了server 开始广播
         peripheral.startAdvertising([
             CBAdvertisementDataServiceUUIDsKey: CBUUID(string: serviceUUID),
-            CBAdvertisementDataLocalNameKey:"marshal_123456"
+            CBAdvertisementDataLocalNameKey: "marshal_123456"
         ])
     }
     
@@ -112,9 +110,7 @@ class LSBluetoothPerpheral: NSObject, CBPeripheralManagerDelegate {
             if (obj.characteristic.uuid.uuidString == characterUUID) {
                 //假设我们用到了这个服务做其中一件事情
                 let receiveString = NSString(data: obj.value!, encoding: String.Encoding.utf8.rawValue);
-                let str = String(data: obj.value!, encoding: String.Encoding.utf8)
-                print("receiveString", receiveString?.description)
-                print("str", str?.description)
+                print(receiveString?.description ?? "nil")
                 
                 if let receive = receiveString {
                     self.receiveString.append(receive as String)
