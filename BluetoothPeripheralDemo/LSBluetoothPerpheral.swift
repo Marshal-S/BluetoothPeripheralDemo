@@ -54,7 +54,7 @@ class LSBluetoothPerpheral: NSObject, CBPeripheralManagerDelegate {
     //符合条件后在初始化
     func setup() {
         print("初始化了")
-        let properties = (CBCharacteristicProperties.indicate.rawValue | CBCharacteristicProperties.write.rawValue | CBCharacteristicProperties.writeWithoutResponse.rawValue |  CBCharacteristicProperties.indicate.rawValue | CBCharacteristicProperties.read.rawValue | CBCharacteristicProperties.notify.rawValue | CBCharacteristicProperties.broadcast.rawValue)
+        let properties = (CBCharacteristicProperties.indicate.rawValue | CBCharacteristicProperties.write.rawValue | CBCharacteristicProperties.writeWithoutResponse.rawValue | CBCharacteristicProperties.read.rawValue | CBCharacteristicProperties.notify.rawValue)
         let permissions = (CBAttributePermissions.readable.rawValue | CBAttributePermissions.writeable.rawValue)
         
         //暴露特征
@@ -85,12 +85,8 @@ class LSBluetoothPerpheral: NSObject, CBPeripheralManagerDelegate {
         //接收到读取信息的通知
         print("didReceiveReadRequest", request);
         
-        let data = request.characteristic.value
-        print("data", data!.description as String)
-        
-        let myString = "你猜猜我是谁"
-        let newData = myString.data(using: String.Encoding.utf8)
-        
+        let readMessage = "给读取中心的设备发送的消息：哈哈";
+        let newData = readMessage.data(using: String.Encoding.utf8)
         request.value = newData
        //对请求作出成功响应
         peripheral.respond(to: request, withResult: .success)
